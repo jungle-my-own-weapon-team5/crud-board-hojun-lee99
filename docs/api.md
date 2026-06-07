@@ -1,0 +1,18 @@
+## API 명세
+- 회원가입 
+	- 유저 생성 `POST /auth/register`
+- 로그인
+	- 로그인 `POST /auth/login`
+- post CRUD
+	- posts 전체 조회 `GET /posts?page=1&limit=20`
+	- 특정 post postid 조회 `GET /posts/{postid}`
+	- post 생성 `POST /posts`
+	- post 수정 `PUT /posts/{postid}`
+	- post 삭제 `DELETE /posts/{postid}`
+- 댓글
+	- 특정 post comment 조회 `GET /posts/{postid}/comments`
+	- comment 생성 `POST /posts/{postid}/comments`
+	- comment 수정 `PUT /comments/{commentid}`
+	- comment 삭제 `DELETE /comments/{commentid}`
+- 검색
+	- 제목 검색 `GET /posts?title={title}`
