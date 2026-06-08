@@ -1,7 +1,7 @@
 from datetime import datetime
 
-from sqlalchemy import String, Text, DateTime, func
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import String, Text, DateTime, func, Integer
+from sqlalchemy.orm import Mapped, mapped_column, relationship, foreign
 
 from app.database import Base
 
@@ -9,8 +9,15 @@ class Post(Base):
     __tablename__ = "posts"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, nullable=False)
     title: Mapped[str] = mapped_column(String(100), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
+
+    user: Mapped["User"] = relationship(
+        "User",
+        primaryjoin=lambda: foreign(Post.user_id) == User.id,
+        back_populates="posts",
+    )
 
 class User(Base):
     __tablename__ = "users"
@@ -33,4 +40,10 @@ class User(Base):
     deletedAt: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
+    )
+
+    posts: Mapped[list["Post"]] = relationship(
+        "Post",
+        primaryjoin=lambda: User.id == foreign(Post.user_id),
+        back_populates="user",
     )
