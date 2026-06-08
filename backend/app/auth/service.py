@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.auth import repository
-from backend.app.auth.security import hash_password
+from app.auth.security import hash_password
 
 
 def register(
