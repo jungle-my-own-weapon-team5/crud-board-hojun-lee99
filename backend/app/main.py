@@ -1,11 +1,41 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
+
+from app.database import get_db
+from app.api import api_router
 
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(api_router)
+
+@app.get("/health")
+def read_root():
+    return {"status": "ok"}
+
+@app.get("/health/db")
+def get_db_health(db: Session = Depends(get_db)):
+    try:
+        db.execute(text("SELECT 1"))
+    except SQLAlchemyError:
+        print("/health/db: db connection error!")
+        raise HTTPException(
+            status_code=500,
+            detail="Internal Error",
+        )
+    return {"db": "ok"}
