@@ -1,10 +1,3 @@
-"""
-jwt 구현용 
-hash_password()
-verify_password()
-create_access_token()
-decode_access_token()
-"""
 from datetime import datetime, timedelta, timezone
 from jose import JWTError, jwt
 from pwdlib import PasswordHash
