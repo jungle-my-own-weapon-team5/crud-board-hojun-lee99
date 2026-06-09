@@ -11,3 +11,11 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     nickname: str = Field(min_length=2, max_length=50)
     password: str = Field(min_length=8, max_length=72)
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+class LoginResponse(BaseModel):
+    access_token: str
+    token_type:str = "bearer"
