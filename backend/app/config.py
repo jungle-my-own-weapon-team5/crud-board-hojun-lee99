@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     # 실제 배포시 수정 필요
     jwt_secret_key: str = "secret-key"
-    jwt_algorithm: str = "H256"
+    jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
 
     model_config = SettingsConfigDict(env_file=BASE_DIR / ".env")
