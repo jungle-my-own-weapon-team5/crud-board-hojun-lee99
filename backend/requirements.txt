@@ -6,3 +6,4 @@ python-dotenv
 pydantic-settings
 alembic
 pwdlib[argon2]
+python-jose[cryptography]

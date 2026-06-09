@@ -14,6 +14,11 @@ class Settings(BaseSettings):
         "postgresql+psycopg://board_user:board_password@localhost:5432/board_db"
     )
 
+    # 실제 배포시 수정 필요
+    jwt_secret_key: str = "secret-key"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+
     model_config = SettingsConfigDict(env_file=BASE_DIR / ".env")
 
 
