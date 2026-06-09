@@ -5,15 +5,15 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.auth import service
-from app.auth.schemas import RegisterRequest
+from app.auth.schemas import RegisterRequest, LoginRequest, LoginResponse
 from app.database import get_db
 
 
 router = APIRouter()
 
 @router.post(
-        "/register",
-        status_code=status.HTTP_201_CREATED,
+    "/register",
+    status_code=status.HTTP_201_CREATED,
 )
 def register(req: RegisterRequest, db: Session = Depends(get_db)):
     # service에 가입 처리 로직 호출
@@ -24,3 +24,14 @@ def register(req: RegisterRequest, db: Session = Depends(get_db)):
         password=req.password,
     )
     return {"message": "registered"}
+
+@router.post(
+    "/login",
+    response_model=LoginResponse
+)
+def login(req:LoginRequest, db: Session = Depends(get_db)):
+    access_token = service.login(db, email=req.email, password=req.password)
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+    }
