@@ -14,6 +14,10 @@ class Settings(BaseSettings):
         "postgresql+psycopg://board_user:board_password@localhost:5432/board_db"
     )
 
+    jwt_secret_key: str = "secret-key"
+    algorithm: str = "H256"
+    access_token_expire_minutes: int = 30
+
     model_config = SettingsConfigDict(env_file=BASE_DIR / ".env")
 
 
