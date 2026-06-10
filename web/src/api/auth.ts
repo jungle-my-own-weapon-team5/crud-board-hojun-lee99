@@ -10,7 +10,7 @@ type LoginRequest = {
 }
 
 type LoginResponse = {
-    access_toekn: string,
+    access_token: string,
     token_type: string,
 }
 
@@ -59,7 +59,7 @@ export async function loginUser(payload: LoginRequest) {
 
     const data: LoginResponse = await response.json()
 
-    localStorage.setItem('accessToken', data.access_toekn)
+    localStorage.setItem('accessToken', data.access_token)
 
     return data
 }
