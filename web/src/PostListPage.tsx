@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { fetchPosts, type PostListResponse } from "./api/posts";
 
-function PostListPage() {
+type Props = {
+    onCreateClick: () => void
+}
+
+function PostListPage({ onCreateClick }: Props) {
     const [page, setPage] = useState(1)
     const [data, setData] = useState<PostListResponse | null>(null)
     const [loading, setLoading] = useState(false)
@@ -31,6 +35,10 @@ function PostListPage() {
     return (
         <main>
             <h1>게시글 목록</h1>
+
+            <button type="button" onClick={onCreateClick}>
+                글쓰기
+            </button>
 
             {loading && <p>불러오는 중...</p>}
             {error && <p role="alert">{error}</p>}
