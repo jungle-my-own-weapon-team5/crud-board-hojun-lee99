@@ -14,7 +14,7 @@ type LoginResponse = {
     token_type: string,
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000'
 
 export async function registerUser(payload: RegisterRequest) {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {

@@ -1,10 +1,8 @@
+'use client'
+
 import React, { useState } from "react"
 import { createPost } from "./api/posts"
-
-type Props = {
-    onCreated: () => void
-    onCancel: () => void
-}
+import { useRouter } from "next/navigation"
 
 type FormState = {
     title: string
@@ -16,7 +14,9 @@ const initialForm: FormState = {
     content: '',
 }
 
-function PostCreatePage({ onCreated, onCancel }: Props) {
+function PostCreatePage() {
+    const router = useRouter()
+
     const [form, setForm] = useState<FormState>(initialForm)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
@@ -60,7 +60,7 @@ function PostCreatePage({ onCreated, onCancel }: Props) {
             })
 
             setForm(initialForm)
-            onCreated()
+            router.push('/')
         } catch (err) {
             setError(err instanceof Error ? err.message : '게시글 작성에 실패했습니다.')
         } finally {
@@ -96,7 +96,7 @@ function PostCreatePage({ onCreated, onCancel }: Props) {
 
                 {error && <p role="alert">{error}</p>}
 
-                <button type="button" onClick={onCancel} disabled={loading}>
+                <button type="button" onClick={() => router.push('/')} disabled={loading}>
                     취소
                 </button>
 

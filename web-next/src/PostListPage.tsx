@@ -1,11 +1,12 @@
+'use client'
+
 import { useEffect, useState } from "react";
 import { fetchPosts, type PostListResponse } from "./api/posts";
+import { useRouter } from "next/navigation";
 
-type Props = {
-    onCreateClick: () => void
-}
+function PostListPage() {
+    const router = useRouter();
 
-function PostListPage({ onCreateClick }: Props) {
     const [page, setPage] = useState(1)
     const [data, setData] = useState<PostListResponse | null>(null)
     const [loading, setLoading] = useState(false)
@@ -36,7 +37,7 @@ function PostListPage({ onCreateClick }: Props) {
         <main>
             <h1>게시글 목록</h1>
 
-            <button type="button" onClick={onCreateClick}>
+            <button type="button" onClick={() => router.push("/posts/new")}>
                 글쓰기
             </button>
 
