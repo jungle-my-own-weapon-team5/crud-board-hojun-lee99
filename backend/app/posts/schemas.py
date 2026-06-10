@@ -17,3 +17,7 @@ class PostListResponse(BaseModel):
     limit: int
     total: int
     total_pages: int
+
+class PostCreateRequest(BaseModel):
+    title: str
+    content: str
