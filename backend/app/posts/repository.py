@@ -15,3 +15,22 @@ def find_posts(db: Session, *, page: int, limit: int) -> list[Post]:
         .limit(limit)
         .all()
     )
+
+def create_post(
+        db: Session,
+        *,
+        user_id: int,
+        title: str,
+        content: str,
+) -> Post:
+    post = Post(
+        user_id=user_id,
+        title=title,
+        content=content,
+    )
+
+    db.add(post)
+    db.commit()
+    db.refresh(post)
+
+    return post
