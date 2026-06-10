@@ -14,6 +14,20 @@ export type PostListResponse = {
     total_pages: number
 }
 
+export type PostCreateRequest = {
+    title: string
+    content: string
+}
+
+export type PostCreateResponse = {
+    id: number
+    user_id: number
+    title: string
+    content: string
+    created_at: string
+    updated_at: string
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000'
 
 export async function fetchPosts(page:number, limit = 20): Promise<PostListResponse> {
@@ -21,6 +35,39 @@ export async function fetchPosts(page:number, limit = 20): Promise<PostListRespo
 
     if (!response.ok) {
         throw new Error('게시글 목록 조회에 실패했습니다.')
+    }
+
+    return response.json()
+}
+
+export async function createPost(payload:PostCreateRequest): Promise<PostCreateResponse> {
+    const accessToken = localStorage.getItem('accessToken')
+
+    if (!accessToken) {
+        throw new Error('로그인이 필요합니다.')
+    }
+
+    const response = await fetch(`${API_BASE_URL}/posts`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+        const error = await response.json().catch(() => null)
+
+        if (response.status == 401) {
+            throw new Error('로그인이 만료되었습니다. 다시 로그인해주세요.')
+        }
+
+        if (Array.isArray(error?.detail)) {
+            throw new Error(error.detail[0]?.msg ?? '입력값을 확인해주세요.')
+        }
+
+        throw new Error(error?.detail ?? '게시글 작성에 실패했습니다.')
     }
 
     return response.json()

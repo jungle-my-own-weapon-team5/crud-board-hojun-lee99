@@ -1,9 +1,11 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.posts import service
-from app.posts.schemas import PostListResponse
+from app.posts.schemas import PostListResponse, PostCreateRequest
+from app.auth.dependencies import get_current_user_id
+
 
 router = APIRouter()
 
@@ -14,3 +16,18 @@ def list_posts(
     db: Session = Depends(get_db)
 ):
     return service.list_posts(db, page=page, limit=limit)
+
+@router.post("", status_code=status.HTTP_201_CREATED)
+def create_post(
+    req: PostCreateRequest,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user_id),
+):
+    post = service.create_post(
+        db,
+        user_id=current_user_id,
+        title=req.title,
+        content=req.content
+    )
+
+    return post
