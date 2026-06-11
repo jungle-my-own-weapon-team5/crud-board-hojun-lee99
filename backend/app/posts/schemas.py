@@ -19,6 +19,7 @@ class PostListResponse(BaseModel):
     total_pages: int
 
 class PostCreateRequest(BaseModel):
+    board_id: int
     title: str
     content: str
 
