@@ -34,7 +34,7 @@ class Post(Base):
         primaryjoin=lambda: foreign(Post.user_id) == User.id,
         back_populates="posts",
     )
-    board: Mapped["Post"] = relationship(
+    board: Mapped["Board"] = relationship(
         "Board",
         primaryjoin=lambda: foreign(Post.board_id) == Board.id,
         back_populates="posts",
@@ -61,6 +61,11 @@ class User(Base):
     posts: Mapped[list["Post"]] = relationship(
         "Post",
         primaryjoin=lambda: User.id == foreign(Post.user_id),
+        back_populates="user",
+    )
+    comments: Mapped[list["Comment"]] = relationship(
+        "Comment",
+        primaryjoin=lambda: User.id == foreign(Comment.user_id),
         back_populates="user",
     )
 
