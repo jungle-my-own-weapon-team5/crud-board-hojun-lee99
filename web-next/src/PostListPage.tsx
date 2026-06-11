@@ -77,6 +77,7 @@ function PostListPage() {
                                 <TableHead>제목</TableHead>
                                 <TableHead>작성자</TableHead>
                                 <TableHead>작성일</TableHead>
+                                <TableHead>관리</TableHead>
                             </TableRow>
                         </TableHeader>
 
@@ -87,6 +88,11 @@ function PostListPage() {
                                     <TableCell>{post.title}</TableCell>
                                     <TableCell>{post.user_id}</TableCell>
                                     <TableCell>{new Date(post.created_at).toLocaleString()}</TableCell>
+                                    <TableCell>
+                                        <Button variant="outline" size="sm" asChild>
+                                            <Link href={`/posts/${post.id}/edit`}>수정</Link>
+                                        </Button>
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>

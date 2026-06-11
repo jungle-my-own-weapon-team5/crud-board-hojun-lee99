@@ -34,3 +34,25 @@ def create_post(
     db.refresh(post)
 
     return post
+
+def find_post_by_id(db: Session, post_id: int) -> Post | None:
+    return (
+        db.query(Post)
+        .filter(Post.id == post_id, Post.deleted_at.is_(None))
+        .first()
+    )
+
+def update_post(
+    db: Session,
+    *,
+    post: Post,
+    title: str,
+    content: str,
+) -> Post:
+    post.title = title
+    post.content = content
+
+    db.commit()
+    db.refresh(post)
+
+    return post
