@@ -3,6 +3,7 @@ from pydantic import BaseModel, ConfigDict
 
 class PostListItem(BaseModel):
     id: int
+    board_id: int
     user_id: int
     title: str
     created_at: datetime
@@ -29,6 +30,7 @@ class PostUpdateRequest(BaseModel):
     
 class PostDetailResponse(BaseModel):
     id: int
+    board_id: int
     user_id: int
     title: str
     content: str
