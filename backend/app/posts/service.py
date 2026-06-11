@@ -52,12 +52,14 @@ def update_post(
             detail="You can only edit your own post",
         )
     
-    return repository.update_post(
+    repository.update_post(
         db,
         post=post,
         title=title,
         content=content,
     )
+
+    return
 
 def get_post(db: Session, *, post_id: int):
     post = repository.find_post_by_id(db, post_id)
@@ -69,3 +71,32 @@ def get_post(db: Session, *, post_id: int):
         )
     
     return post
+
+def delete_post(
+    db: Session,
+    *,
+    post_id: int,
+    user_id: int,
+):
+    get_active_user_or_raise(db, user_id=user_id)
+    
+    post = repository.find_post_by_id(db, post_id)
+    
+    if post is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Post not found",
+        )
+    
+    if post.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only delete your own post",
+        )
+    
+    repository.delete_post(
+        db,
+        post=post,
+    )
+
+    return
