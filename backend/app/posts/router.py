@@ -53,3 +53,15 @@ def get_post(
     db: Session = Depends(get_db),
 ):
     return service.get_post(db, post_id=post_id)
+
+@router.delete('/{post_id}', status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(
+    post_id: int,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user_id),
+):
+    service.delete_post(
+        db,
+        post_id=post_id,
+        user_id=current_user_id,
+    )
