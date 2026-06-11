@@ -21,3 +21,7 @@ class PostListResponse(BaseModel):
 class PostCreateRequest(BaseModel):
     title: str
     content: str
+
+class PostUpdateRequest(BaseModel):
+    title: str
+    content: str
