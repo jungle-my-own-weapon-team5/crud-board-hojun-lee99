@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.posts import service
-from app.posts.schemas import PostListResponse, PostCreateRequest
+from app.posts.schemas import PostListResponse, PostCreateRequest, PostUpdateRequest
 from app.auth.dependencies import get_current_user_id
 
 
@@ -31,3 +31,18 @@ def create_post(
     )
 
     return post
+
+@router.put("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+def update_post(
+    post_id: int,
+    req: PostUpdateRequest,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user_id),
+):
+    service.update_post(
+        db,
+        post_id=post_id,
+        user_id=current_user_id,
+        title=req.title,
+        content=req.content,
+    )
