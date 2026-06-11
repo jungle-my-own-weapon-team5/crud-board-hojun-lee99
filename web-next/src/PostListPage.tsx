@@ -103,7 +103,11 @@ function PostListPage() {
                             {posts.map((post) => (
                                 <TableRow key={post.id}>
                                     <TableCell>{post.id}</TableCell>
-                                    <TableCell>{post.title}</TableCell>
+                                    <TableCell>
+                                        <Link href={`/posts/${post.id}`} className="font-medium hover:underline">
+                                            {post.title}
+                                        </Link>
+                                    </TableCell>
                                     <TableCell>{post.user_id}</TableCell>
                                     <TableCell>{new Date(post.created_at).toLocaleString()}</TableCell>
                                     <TableCell>
