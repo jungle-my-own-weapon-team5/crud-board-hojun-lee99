@@ -121,3 +121,30 @@ export async function updatePost(postId:number, payload: PostUpdateRequest): Pro
 
     return
 }
+
+export async function deletePost(postId: number) {
+    const accessToken = localStorage.getItem('accessToken')
+    
+    if (!accessToken) {
+        throw new Error('로그인이 필요합니다.')
+    }
+
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}`, {
+        method: 'DELETE',
+        headers: {
+            Authorization: `Bearer ${accessToken}`
+        }
+    })
+    
+    if (!response.ok) {
+        const error = await response.json().catch(() => null)
+        
+        if (response.status == 401) {
+            throw new Error('로그인이 만료되었습니다. 다시 로그인해주세요.')
+        }
+        
+        throw new Error(error?.detail ?? '게시글 삭제에 실패했습니다.')
+    }
+    
+    return
+}
