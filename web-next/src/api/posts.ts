@@ -87,6 +87,16 @@ export async function createPost(payload:PostCreateRequest): Promise<PostCreateR
     return response.json()
 }
 
+export async function fetchPost(postId:number): Promise<PostDetail> {
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}`)
+
+    if (!response.ok) {
+        throw new Error('게시글 조회에 실패했습니다.')
+    }
+
+    return response.json()
+}
+
 export async function updatePost(postId:number, payload: PostUpdateRequest): Promise<void> {
     const accessToken = localStorage.getItem('accessToken')
 
