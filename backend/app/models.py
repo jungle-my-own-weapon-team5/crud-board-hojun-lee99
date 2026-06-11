@@ -39,6 +39,11 @@ class Post(Base):
         primaryjoin=lambda: foreign(Post.board_id) == Board.id,
         back_populates="posts",
     )
+    comments: Mapped[list["Comment"]] = relationship(
+        "Comment",
+        primaryjoin=lambda: Post.id == foreign(Comment.post_id),
+        back_populates="post",
+    )
     
 
 class User(Base):
@@ -73,4 +78,26 @@ class Board(Base):
         "Post",
         primaryjoin=lambda: Board.id == foreign(Post.board_id),
         back_populates="board",
+    )
+
+class Comment(Base):
+    __tablename__ = "comments"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    post_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False)
+    deleted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    
+    post: Mapped["Post"] = relationship(
+        "Post",
+        primaryjoin=lambda: foreign(Comment.post_id) == Post.id,
+        back_populates="comments",
+    )
+    user: Mapped["User"] = relationship(
+        "User",
+        primaryjoin=lambda: foreign(Comment.user_id) == User.id,
+        back_populates="comments",
     )
