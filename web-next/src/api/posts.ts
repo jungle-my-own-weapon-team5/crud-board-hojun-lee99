@@ -6,6 +6,15 @@ export type PostListItem = {
     updated_at: string
 }
 
+export type PostDetail = {
+    id: number
+    user_id: number
+    title: string
+    content: string
+    created_at: string
+    updated_at: string
+}
+
 export type PostListResponse = {
     items: PostListItem[]
     page: number
