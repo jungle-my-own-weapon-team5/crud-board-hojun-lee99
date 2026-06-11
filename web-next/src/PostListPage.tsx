@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react";
-import { fetchPosts, type PostListResponse } from "./api/posts";
+import { deletePost, fetchPosts, type PostListResponse } from "./api/posts";
 import Link from "next/link";
 import { Button } from "./components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./components/ui/table";
@@ -14,28 +14,46 @@ function PostListPage() {
     const [data, setData] = useState<PostListResponse | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [deletingId, setDeletingId] = useState<number | null>(null)
 
-    useEffect(() => {
-        async function loadPosts() {
-            try {
-                setLoading(true)
-                setError('')
+    async function loadPosts() {
+        try {
+            setLoading(true)
+            setError('')
 
-                const result = await fetchPosts(page, 20)
-                setData(result)
-            } catch (err) {
-                setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
-            } finally {
-                setLoading(false)
-            }
+            const result = await fetchPosts(page, 20)
+            setData(result)
+        } catch (err) {
+            setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
+        } finally {
+            setLoading(false)
         }
-
+    }
+        
+    useEffect(() => {
         loadPosts()
     }, [page])
 
     const posts = data?.items ?? []
     const totalPages = data?.total_pages ?? 0
     const displayTotalPages = Math.max(totalPages, 1);
+    const handleDelete = async (postId: number) => {
+        const confirmed = window.confirm('게시글을 삭제하시겠습니까?')
+
+        if (!confirmed) return
+
+        try {
+            setDeletingId(postId)
+            setError('')
+            
+            await deletePost(postId)
+            await loadPosts()
+        } catch (err) {
+            setError(err instanceof Error ? err.message : '게시글 삭제에 실패했습니다.')
+        } finally {
+            setDeletingId(null)
+        }
+    }
 
     return (
         <main>
@@ -89,9 +107,21 @@ function PostListPage() {
                                     <TableCell>{post.user_id}</TableCell>
                                     <TableCell>{new Date(post.created_at).toLocaleString()}</TableCell>
                                     <TableCell>
-                                        <Button variant="outline" size="sm" asChild>
-                                            <Link href={`/posts/${post.id}/edit`}>수정</Link>
-                                        </Button>
+                                        <div className="flex gap-2">
+                                            <Button variant="outline" size="sm" asChild>
+                                                <Link href={`/posts/${post.id}/edit`}>수정</Link>
+                                            </Button>
+                                            
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                type="button"
+                                                disabled={deletingId === post.id}
+                                                onClick={() => handleDelete(post.id)}
+                                            >
+                                                {deletingId === post.id ? '삭제 중...' : '삭제'}
+                                            </Button>
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             ))}
