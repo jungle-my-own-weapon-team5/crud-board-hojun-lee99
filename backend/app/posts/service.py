@@ -58,3 +58,14 @@ def update_post(
         title=title,
         content=content,
     )
+
+def get_post(db: Session, *, post_id: int):
+    post = repository.find_post_by_id(db, post_id)
+
+    if post is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Post not found",
+        )
+    
+    return post

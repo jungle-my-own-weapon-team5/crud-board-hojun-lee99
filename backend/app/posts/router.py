@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.posts import service
-from app.posts.schemas import PostListResponse, PostCreateRequest, PostUpdateRequest
+from app.posts.schemas import PostListResponse, PostCreateRequest, PostUpdateRequest, PostDetailResponse
 from app.auth.dependencies import get_current_user_id
 
 
@@ -46,3 +46,10 @@ def update_post(
         title=req.title,
         content=req.content,
     )
+
+@router.get("/{post_id}", response_model=PostDetailResponse)
+def get_post(
+    post_id: int,
+    db: Session = Depends(get_db),
+):
+    return service.get_post(db, post_id=post_id)
