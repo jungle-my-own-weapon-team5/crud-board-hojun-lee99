@@ -2,6 +2,11 @@
 
 import React, { useState } from "react"
 import { loginUser } from "./api/auth"
+import { Label } from "./components/ui/label"
+import { Input } from "./components/ui/input"
+import { Button } from "./components/ui/button"
+import { toast } from "sonner"
+import { Alert, AlertDescription } from "./components/ui/alert"
 
 type FormState = {
     email: string
@@ -54,7 +59,7 @@ function LoginPage() {
             })
 
             setForm(initialForm)
-            alert('로그인되었습니다.')
+            toast.success('로그인되었습니다.')
         } catch (err) {
             setError(err instanceof Error ? err.message : '로그인에 실패했습니다.')
         } finally {
@@ -67,33 +72,37 @@ function LoginPage() {
             <h1>로그인</h1>
 
             <form onSubmit={handleSubmit}>
-                <label>
+                <Label>
                     이메일
-                    <input
+                    <Input
                         name="email"
                         type="email"
                         value={form.email}
                         onChange={handleChange}
                         autoComplete="email"
                     />
-                </label>
+                </Label>
 
-                <label>
+                <Label>
                     비밀번호
-                    <input
+                    <Input
                         name="password"
                         type="password"
                         value={form.password}
                         onChange={handleChange}
                         autoComplete="current-password"
                     />
-                </label>
+                </Label>
 
-                {error && <p role="alert">{error}</p>}
+                {error && (
+                    <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
                 
-                <button type="submit" disabled={loading}>
+                <Button type="submit" disabled={loading}>
                     {loading ? '로그인 중...' : '로그인'}
-                </button>
+                </Button>
             </form>
         </main>
     )

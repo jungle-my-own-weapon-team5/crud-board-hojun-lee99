@@ -2,6 +2,10 @@
 
 import React, { useState } from "react"
 import { registerUser } from "./api/auth"
+import { Label } from "./components/ui/label"
+import { Button } from "./components/ui/button"
+import { Input } from "./components/ui/input"
+import { Alert, AlertDescription } from "./components/ui/alert"
 
 type FormState = {
     email: string,
@@ -79,32 +83,40 @@ function RegisterPage() {
             <h1>회원가입</h1>
 
             <form onSubmit={handleSubmit}>
-                <label>
-                    이메일
-                    <input name="email" type="email" value={form.email} onChange={handleChange} autoComplete="email"/>
-                </label>
+                <div className="grid gap-2">
+                    <Label htmlFor="email">이메일</Label>
+                    <Input id="email" name="email" type="email" value={form.email} onChange={handleChange} autoComplete="email"/>
+                </div>
 
-                <label>
-                    닉네임
-                    <input name="nickname" type="text" value={form.nickname} onChange={handleChange} autoComplete="nickname"/>
-                </label>
+                <div className="grid gap-2">
+                    <Label htmlFor="nickname">닉네임</Label>
+                    <Input id="nickname" name="nickname" type="text" value={form.nickname} onChange={handleChange} autoComplete="nickname"/>
+                </div>
 
-                <label>
-                    비밀번호
-                    <input name="password" type="password" value={form.password} onChange={handleChange} autoComplete="new-password"/>
-                </label>
+                <div className="grid gap-2">
+                    <Label htmlFor="password">비밀번호</Label>
+                    <Input id="password" name="password" type="password" value={form.password} onChange={handleChange} autoComplete="new-password"/>
+                </div>
 
-                <label>
-                    비밀번호 확인
-                    <input name="passwordConfirm" type="password" value={form.passwordConfirm} onChange={handleChange} autoComplete="new-password"/>
-                </label>
+                <div className="grid gap-2">
+                    <Label htmlFor="passwordConfirm">비밀번호 확인</Label>
+                    <Input id="passwordConfirm" name="passwordConfirm" type="password" value={form.passwordConfirm} onChange={handleChange} autoComplete="new-password"/>
+                </div>
 
-                {error && <p role="alert">{error}</p>}
-                {success && <p>{success}</p>}
+                {error && (
+                    <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
+                {success && ( 
+                    <Alert>
+                        <AlertDescription>{success}</AlertDescription>
+                    </Alert>
+                )}
 
-                <button type="submit" disabled={loading}>
+                <Button type="submit" disabled={loading}>
                     {loading ? '가입 중...' : '회원가입'}
-                </button>
+                </Button>
             </form>
         </main>
     )

@@ -3,6 +3,11 @@
 import React, { useState } from "react"
 import { createPost } from "./api/posts"
 import { useRouter } from "next/navigation"
+import { Label } from "./components/ui/label"
+import { Button } from "./components/ui/button"
+import { Input } from "./components/ui/input"
+import { Textarea } from "./components/ui/textarea"
+import { Alert, AlertDescription } from "./components/ui/alert"
 
 type FormState = {
     title: string
@@ -73,36 +78,42 @@ function PostCreatePage() {
             <h1>게시글 작성</h1>
 
             <form onSubmit={handleSubmit}>
-                <label>
-                    제목
-                    <input
+                <div className="grid gap-2">
+                    <Label htmlFor="title">제목</Label>
+                    <Input
+                        id="title"
                         name="title"
                         type="text"
                         value={form.title}
                         onChange={handleChange}
                         maxLength={100}
                     />
-                </label>
+                </div>
 
-                <label>
-                    내용
-                    <textarea
+                <div className="grid gap-2">
+                    <Label htmlFor="content">내용</Label>
+                    <Textarea
+                        id="content"
                         name="content"
                         value={form.content}
                         onChange={handleChange}
                         rows={10}
                     />
-                </label>
+                </div>
 
-                {error && <p role="alert">{error}</p>}
+                {error && (
+                    <Alert variant="destructive">
+                        <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                )}
 
-                <button type="button" onClick={() => router.push('/')} disabled={loading}>
+                <Button type="button" onClick={() => router.push('/')} disabled={loading}>
                     취소
-                </button>
+                </Button>
 
-                <button type="submit" disabled={loading}>
+                <Button type="submit" disabled={loading}>
                     {loading ? '작성 중...' : '작성'}
-                </button>
+                </Button>
             </form>
         </main>
     )

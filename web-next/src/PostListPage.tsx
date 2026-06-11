@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { fetchPosts, type PostListResponse } from "./api/posts";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "./components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./components/ui/table";
+import { Alert, AlertDescription } from "./components/ui/alert";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "./components/ui/card";
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "./components/ui/pagination";
 
 function PostListPage() {
-    const router = useRouter();
-
     const [page, setPage] = useState(1)
     const [data, setData] = useState<PostListResponse | null>(null)
     const [loading, setLoading] = useState(false)
@@ -32,53 +35,107 @@ function PostListPage() {
 
     const posts = data?.items ?? []
     const totalPages = data?.total_pages ?? 0
+    const displayTotalPages = Math.max(totalPages, 1);
 
     return (
         <main>
-            <h1>게시글 목록</h1>
+            <Card>
+                <CardHeader>
+                    <CardTitle>게시글 목록</CardTitle>
+                
+                    <CardAction>
+                        <div className="flex items-center gap-2">
+                            <Button variant="outline" asChild>
+                                <Link href="/login">로그인</Link>
+                            </Button>
 
-            <button type="button" onClick={() => router.push("/posts/new")}>
-                글쓰기
-            </button>
+                            <Button variant="outline" asChild>
+                                <Link href="/register">회원가입</Link>
+                            </Button>
 
-            {loading && <p>불러오는 중...</p>}
-            {error && <p role="alert">{error}</p>}
-            
-            <p>총 {data?.total ?? 0}개</p>
+                            <Button asChild>
+                                <Link href="/posts/new">글쓰기</Link>
+                            </Button>
+                        </div>
+                    </CardAction>
+                </CardHeader>
 
-            <table>
-                <thead>
-                    <tr>
-                        <th>번호</th>
-                        <th>제목</th>
-                        <th>작성자</th>
-                        <th>작성일</th>
-                    </tr>
-                </thead>
+                <CardContent>
+                    {loading && <p>불러오는 중...</p>}
+                    {error && (
+                        <Alert variant="destructive">
+                            <AlertDescription>{error}</AlertDescription>
+                        </Alert>
+                    )}
+                    
+                    <p>총 {data?.total ?? 0}개</p>
 
-                <tbody>
-                    {posts.map((post) => (
-                        <tr key={post.id}>
-                            <td>{post.id}</td>
-                            <td>{post.title}</td>
-                            <td>{post.user_id}</td>
-                            <td>{new Date(post.created_at).toLocaleString()}</td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>번호</TableHead>
+                                <TableHead>제목</TableHead>
+                                <TableHead>작성자</TableHead>
+                                <TableHead>작성일</TableHead>
+                            </TableRow>
+                        </TableHeader>
 
-            <button disabled={page <= 1} onClick={() => setPage(page - 1)}>
-                이전
-            </button>
+                        <TableBody>
+                            {posts.map((post) => (
+                                <TableRow key={post.id}>
+                                    <TableCell>{post.id}</TableCell>
+                                    <TableCell>{post.title}</TableCell>
+                                    <TableCell>{post.user_id}</TableCell>
+                                    <TableCell>{new Date(post.created_at).toLocaleString()}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
 
-            <span>
-                {page} / {totalPages}
-            </span>
+                    <Pagination>
+                        <PaginationContent>
+                            <PaginationItem>
+                                <PaginationPrevious
+                                    href="#"
+                                    text="이전"
+                                    aria-disabled={page <= 1}
+                                    className={page <= 1 ? "pointer-events-none opacity-50" : undefined}
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        if (page > 1) setPage(page - 1);
+                                    }}
+                                />
+                            </PaginationItem>
 
-            <button disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
-                다음
-            </button>
+                            <PaginationItem>
+                                <PaginationLink
+                                    href="#"
+                                    isActive
+                                    className="min-w-20 px-16"
+                                    onClick={(event) => event.preventDefault()}
+                                >
+                                    {page} / {displayTotalPages}
+                                </PaginationLink>
+                            </PaginationItem>
+
+                            <PaginationItem>
+                                <PaginationNext
+                                    href="#"
+                                    text="다음"
+                                    aria-disabled={page >= totalPages}
+                                    className={
+                                        page >= displayTotalPages ? "pointer-events-none opacity-50" : undefined
+                                    }
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        if (page < totalPages) setPage(page + 1);
+                                    }}
+                                />
+                            </PaginationItem>
+                        </PaginationContent>
+                    </Pagination>
+                </CardContent>
+            </Card>
         </main>
     )
 }
