@@ -18,11 +18,12 @@ def list_posts(db: Session, *, page: int, limit: int = PAGE_SIZE):
         "total_pages": (total + limit - 1) // limit
     }
 
-def create_post(db: Session, *, user_id: int, title: str, content: str):
+def create_post(db: Session, *, board_id:int, user_id: int, title: str, content: str):
     get_active_user_or_raise(db, user_id=user_id)
 
     return repository.create_post(
         db,
+        board_id=board_id,
         user_id=user_id,
         title=title,
         content=content

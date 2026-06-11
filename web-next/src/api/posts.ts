@@ -1,5 +1,6 @@
 export type PostListItem = {
     id: number
+    board_id: number
     user_id: number
     title: string
     created_at: string
@@ -8,6 +9,7 @@ export type PostListItem = {
 
 export type PostDetail = {
     id: number
+    board_id: number
     user_id: number
     title: string
     content: string
@@ -24,12 +26,14 @@ export type PostListResponse = {
 }
 
 export type PostCreateRequest = {
+    board_id: number
     title: string
     content: string
 }
 
 export type PostCreateResponse = {
     id: number
+    board_id: number
     user_id: number
     title: string
     content: string

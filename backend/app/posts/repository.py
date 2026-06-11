@@ -22,11 +22,13 @@ def find_posts(db: Session, *, page: int, limit: int) -> list[Post]:
 def create_post(
         db: Session,
         *,
+        board_id: int,
         user_id: int,
         title: str,
         content: str,
 ) -> Post:
     post = Post(
+        board_id=board_id,
         user_id=user_id,
         title=title,
         content=content,

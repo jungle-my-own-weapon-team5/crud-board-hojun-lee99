@@ -25,6 +25,7 @@ def create_post(
 ):
     post = service.create_post(
         db,
+        board_id=req.board_id,
         user_id=current_user_id,
         title=req.title,
         content=req.content
