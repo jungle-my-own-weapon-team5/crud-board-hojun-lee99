@@ -35,6 +35,13 @@ def create_post(
 
     return post
 
+def find_post_by_id(db: Session, post_id: int) -> Post | None:
+    return (
+        db.query(Post)
+        .filter(Post.id == post_id, Post.deleted_at.is_(None))
+        .first()
+    )
+
 def update_post(
     db: Session,
     *,
