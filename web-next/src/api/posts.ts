@@ -28,6 +28,11 @@ export type PostCreateResponse = {
     updated_at: string
 }
 
+export type PostUpdateRequest = {
+    title: string
+    content: string
+}
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000'
 
 export async function fetchPosts(page:number, limit = 20): Promise<PostListResponse> {
@@ -71,4 +76,29 @@ export async function createPost(payload:PostCreateRequest): Promise<PostCreateR
     }
 
     return response.json()
+}
+
+export async function updatePost(postId:number, payload: PostUpdateRequest): Promise<void> {
+    const accessToken = localStorage.getItem('accessToken')
+
+    if (!accessToken) {
+        throw new Error('로그인이 필요합니다.')
+    }
+
+    const response = await fetch(`${API_BASE_URL}/posts/${postId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify(payload),
+    })
+    
+    if (!response.ok) {
+        const error = await response.json().catch(() => null)
+        throw new Error(error?.detail ?? '게시글 수정에 실패했습니다.')
+    }
+    
+
+    return
 }
