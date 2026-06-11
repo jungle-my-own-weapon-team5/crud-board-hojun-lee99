@@ -34,3 +34,18 @@ def create_post(
     db.refresh(post)
 
     return post
+
+def update_post(
+    db: Session,
+    *,
+    post: Post,
+    title: str,
+    content: str,
+) -> Post:
+    post.title = title
+    post.content = content
+
+    db.commit()
+    db.refresh(post)
+
+    return post
