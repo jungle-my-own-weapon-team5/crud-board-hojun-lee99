@@ -1,5 +1,8 @@
 from sqlalchemy.orm import Session
+from datetime import datetime, timezone
+
 from app.models import Post
+
 
 def count_posts(db: Session) -> int:
     return db.query(Post).filter(Post.deleted_at.is_(None)).count()
@@ -48,11 +51,23 @@ def update_post(
     post: Post,
     title: str,
     content: str,
-) -> Post:
+) -> None:
     post.title = title
     post.content = content
 
     db.commit()
     db.refresh(post)
 
-    return post
+    return
+
+def delete_post(
+        db: Session,
+        *,
+        post: Post,
+) -> None:
+    post.deleted_at = datetime.now(timezone.utc)
+    
+    db.commit()
+    db.refresh(post)
+
+    return
