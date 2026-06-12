@@ -13,9 +13,10 @@ router = APIRouter()
 def list_posts(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=20),
+    board_id: int | None = Query(None, ge=1),
     db: Session = Depends(get_db)
 ):
-    return service.list_posts(db, page=page, limit=limit)
+    return service.list_posts(db, page=page, limit=limit, board_id=board_id)
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_post(

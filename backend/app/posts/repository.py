@@ -4,15 +4,24 @@ from datetime import datetime, timezone
 from app.models import Post
 
 
-def count_posts(db: Session) -> int:
-    return db.query(Post).filter(Post.deleted_at.is_(None)).count()
+def count_posts(db: Session, *, board_id: int | None = None) -> int:
+    query = db.query(Post).filter(Post.deleted_at.is_(None))
 
-def find_posts(db: Session, *, page: int, limit: int) -> list[Post]:
+    if board_id is not None:
+        query = query.filter(Post.board_id == board_id)
+
+    return query.count()
+
+def find_posts(db: Session, *, page: int, limit: int, board_id: int | None = None) -> list[Post]:
     offset = (page - 1) * limit
 
+    query = db.query(Post).filter(Post.deleted_at.is_(None))
+
+    if board_id is not None:
+        query = query.filter(Post.board_id == board_id)
+
     return (
-        db.query(Post)
-        .filter(Post.deleted_at.is_(None))
+        query
         .order_by(Post.created_at.desc(), Post.id.desc())
         .offset(offset)
         .limit(limit)

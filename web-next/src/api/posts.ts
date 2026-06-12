@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "./config"
+
 export type PostListItem = {
     id: number
     board_id: number
@@ -46,10 +48,17 @@ export type PostUpdateRequest = {
     content: string
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000'
+export async function fetchPosts(page:number, limit = 20, boardId?: number): Promise<PostListResponse> {
+    const searchParams = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+    })
 
-export async function fetchPosts(page:number, limit = 20): Promise<PostListResponse> {
-    const response = await fetch(`${API_BASE_URL}/posts?page=${page}&limit=${limit}`)
+    if (boardId !== undefined) {
+        searchParams.set('board_id', String(boardId))
+    }
+
+    const response = await fetch(`${API_BASE_URL}/posts?${searchParams.toString()}`)
 
     if (!response.ok) {
         throw new Error('게시글 목록 조회에 실패했습니다.')

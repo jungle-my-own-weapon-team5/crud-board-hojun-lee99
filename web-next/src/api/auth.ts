@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "./config"
+
 type RegisterRequest = {
     email: string,
     nickname: string,
@@ -13,8 +15,6 @@ type LoginResponse = {
     access_token: string,
     token_type: string,
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000'
 
 export async function registerUser(payload: RegisterRequest) {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {

@@ -6,9 +6,9 @@ from app.auth.component import get_active_user_or_raise
 
 PAGE_SIZE = 20
 
-def list_posts(db: Session, *, page: int, limit: int = PAGE_SIZE):
-    total = repository.count_posts(db)
-    posts = repository.find_posts(db, page=page, limit=limit)
+def list_posts(db: Session, *, page: int, limit: int = PAGE_SIZE, board_id: int | None = None):
+    total = repository.count_posts(db, board_id=board_id)
+    posts = repository.find_posts(db, page=page, limit=limit, board_id=board_id)
 
     return {
         "items": posts,

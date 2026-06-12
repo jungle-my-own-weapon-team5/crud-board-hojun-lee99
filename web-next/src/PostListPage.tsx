@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from "react";
-import { deletePost, fetchPosts, type PostListResponse } from "./api/posts";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { deletePost, fetchPosts, type PostListResponse } from "./api/posts";
+import { fetchBoards, type BoardListItem } from "./api/boards";
 import { Button } from "./components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./components/ui/table";
 import { Alert, AlertDescription } from "./components/ui/alert";
@@ -12,31 +13,82 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 function PostListPage() {
     const [page, setPage] = useState(1)
     const [data, setData] = useState<PostListResponse | null>(null)
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [deletingId, setDeletingId] = useState<number | null>(null)
+    const [boards, setBoards] = useState<BoardListItem[]>([])
+    const [boardsLoading, setBoardsLoading] = useState(true)
+    const [selectedBoardId, setSelectedBoardId] = useState('')
 
-    async function loadPosts() {
-        try {
-            setLoading(true)
-            setError('')
-
-            const result = await fetchPosts(page, 20)
-            setData(result)
-        } catch (err) {
-            setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
-        } finally {
-            setLoading(false)
-        }
-    }
-        
     useEffect(() => {
-        loadPosts()
-    }, [page])
+        let ignore = false
+
+        async function loadBoards() {
+            try {
+                const result = await fetchBoards()
+
+                if (ignore) return
+
+                setBoards(result.items)
+            } catch (err) {
+                if (ignore) return
+
+                setError(err instanceof Error ? err.message :'게시판 목록 조회에 실패했습니다.')
+            } finally {
+                if (!ignore) {
+                    setBoardsLoading(false)
+                }
+            }
+        }
+
+        void loadBoards()
+
+        return () => {
+            ignore = true
+        }
+    }, [])
+
+    useEffect(() => {
+        let ignore = false
+
+        async function loadPosts() {
+            try {
+                const boardId = selectedBoardId ? Number(selectedBoardId) : undefined
+                const result = await fetchPosts(page, 20, boardId)
+
+                if (ignore) return
+
+                setData(result)
+                setError('')
+            } catch (err) {
+                if (ignore) return
+
+                setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
+            } finally {
+                if (!ignore) {
+                    setLoading(false)
+                }
+            }
+        }
+
+        void loadPosts()
+
+        // 이전 요청 응답이 늦었을 경우 ignore를 true로 변경해 데이터 덮어씀을 방지
+        return () => {
+            ignore = true
+        }
+    }, [page, selectedBoardId])
 
     const posts = data?.items ?? []
     const totalPages = data?.total_pages ?? 0
     const displayTotalPages = Math.max(totalPages, 1);
+
+    const movePage = (nextPage: number) => {
+        setLoading(true)
+        setError('')
+        setPage(nextPage)
+    }
+
     const handleDelete = async (postId: number) => {
         const confirmed = window.confirm('게시글을 삭제하시겠습니까?')
 
@@ -47,12 +99,24 @@ function PostListPage() {
             setError('')
             
             await deletePost(postId)
-            await loadPosts()
+
+            setLoading(true)
+            const boardId = selectedBoardId ? Number(selectedBoardId) : undefined
+            const result = await fetchPosts(page, 20, boardId)
+            setData(result)
         } catch (err) {
             setError(err instanceof Error ? err.message : '게시글 삭제에 실패했습니다.')
         } finally {
+            setLoading(false)
             setDeletingId(null)
         }
+    }
+
+    const handleBoardChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setLoading(true)
+        setError('')
+        setPage(1)
+        setSelectedBoardId(event.target.value)
     }
 
     return (
@@ -85,6 +149,28 @@ function PostListPage() {
                             <AlertDescription>{error}</AlertDescription>
                         </Alert>
                     )}
+
+                    <div className="mb-4 flex items-center gap-2">
+                        <label htmlFor="board-filter" className="text-sm font-medium">
+                            게시판
+                        </label>
+
+                        <select
+                            id="board-filter"
+                            value={selectedBoardId}
+                            onChange={handleBoardChange}
+                            disabled={boardsLoading}
+                            className="border-input bg-background flex h-10 rounded-md border px-3 py-2 text-sm"
+                        >
+                            <option value="">전체</option>
+
+                            {boards.map((board) => (
+                                <option key={board.id} value={String(board.id)}>
+                                    {board.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     
                     <p>총 {data?.total ?? 0}개</p>
 
@@ -142,7 +228,7 @@ function PostListPage() {
                                     className={page <= 1 ? "pointer-events-none opacity-50" : undefined}
                                     onClick={(event) => {
                                         event.preventDefault();
-                                        if (page > 1) setPage(page - 1);
+                                        if (page > 1) movePage(page - 1);
                                     }}
                                 />
                             </PaginationItem>
@@ -168,7 +254,7 @@ function PostListPage() {
                                     }
                                     onClick={(event) => {
                                         event.preventDefault();
-                                        if (page < totalPages) setPage(page + 1);
+                                        if (page < totalPages) movePage(page + 1);
                                     }}
                                 />
                             </PaginationItem>
