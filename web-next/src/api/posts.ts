@@ -48,8 +48,17 @@ export type PostUpdateRequest = {
     content: string
 }
 
-export async function fetchPosts(page:number, limit = 20): Promise<PostListResponse> {
-    const response = await fetch(`${API_BASE_URL}/posts?page=${page}&limit=${limit}`)
+export async function fetchPosts(page:number, limit = 20, boardId?: number): Promise<PostListResponse> {
+    const searchParams = new URLSearchParams({
+        page: String(page),
+        limit: String(limit),
+    })
+
+    if (boardId !== undefined) {
+        searchParams.set('board_id', String(boardId))
+    }
+
+    const response = await fetch(`${API_BASE_URL}/posts?${searchParams.toString()}`)
 
     if (!response.ok) {
         throw new Error('게시글 목록 조회에 실패했습니다.')
