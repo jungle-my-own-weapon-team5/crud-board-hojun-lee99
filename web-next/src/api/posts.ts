@@ -1,3 +1,5 @@
+import { API_BASE_URL } from "./config"
+
 export type PostListItem = {
     id: number
     board_id: number
@@ -45,8 +47,6 @@ export type PostUpdateRequest = {
     title: string
     content: string
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:8000'
 
 export async function fetchPosts(page:number, limit = 20): Promise<PostListResponse> {
     const response = await fetch(`${API_BASE_URL}/posts?page=${page}&limit=${limit}`)
