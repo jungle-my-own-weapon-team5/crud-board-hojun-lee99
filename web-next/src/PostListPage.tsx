@@ -12,31 +12,50 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 function PostListPage() {
     const [page, setPage] = useState(1)
     const [data, setData] = useState<PostListResponse | null>(null)
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [deletingId, setDeletingId] = useState<number | null>(null)
 
-    async function loadPosts() {
-        try {
-            setLoading(true)
-            setError('')
-
-            const result = await fetchPosts(page, 20)
-            setData(result)
-        } catch (err) {
-            setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
-        } finally {
-            setLoading(false)
-        }
-    }
-        
     useEffect(() => {
-        loadPosts()
+        let ignore = false
+
+        async function loadPosts() {
+            try {
+                const result = await fetchPosts(page, 20)
+
+                if (ignore) return
+
+                setData(result)
+                setError('')
+            } catch (err) {
+                if (ignore) return
+
+                setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.')
+            } finally {
+                if (!ignore) {
+                    setLoading(false)
+                }
+            }
+        }
+
+        void loadPosts()
+
+        // 이전 요청 응답이 늦었을 경우 ignore를 true로 변경해 데이터 덮어씀을 방지
+        return () => {
+            ignore = true
+        }
     }, [page])
 
     const posts = data?.items ?? []
     const totalPages = data?.total_pages ?? 0
     const displayTotalPages = Math.max(totalPages, 1);
+
+    const movePage = (nextPage: number) => {
+        setLoading(true)
+        setError('')
+        setPage(nextPage)
+    }
+
     const handleDelete = async (postId: number) => {
         const confirmed = window.confirm('게시글을 삭제하시겠습니까?')
 
@@ -47,10 +66,14 @@ function PostListPage() {
             setError('')
             
             await deletePost(postId)
-            await loadPosts()
+
+            setLoading(true)
+            const result = await fetchPosts(page, 20)
+            setData(result)
         } catch (err) {
             setError(err instanceof Error ? err.message : '게시글 삭제에 실패했습니다.')
         } finally {
+            setLoading(false)
             setDeletingId(null)
         }
     }
@@ -142,7 +165,7 @@ function PostListPage() {
                                     className={page <= 1 ? "pointer-events-none opacity-50" : undefined}
                                     onClick={(event) => {
                                         event.preventDefault();
-                                        if (page > 1) setPage(page - 1);
+                                        if (page > 1) movePage(page - 1);
                                     }}
                                 />
                             </PaginationItem>
@@ -168,7 +191,7 @@ function PostListPage() {
                                     }
                                     onClick={(event) => {
                                         event.preventDefault();
-                                        if (page < totalPages) setPage(page + 1);
+                                        if (page < totalPages) movePage(page + 1);
                                     }}
                                 />
                             </PaginationItem>
