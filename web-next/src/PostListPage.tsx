@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from "react";
-import { deletePost, fetchPosts, type PostListResponse } from "./api/posts";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { deletePost, fetchPosts, type PostListResponse } from "./api/posts";
+import { fetchBoards, type BoardListItem } from "./api/boards";
 import { Button } from "./components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./components/ui/table";
 import { Alert, AlertDescription } from "./components/ui/alert";
@@ -15,13 +16,45 @@ function PostListPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState('')
     const [deletingId, setDeletingId] = useState<number | null>(null)
+    const [boards, setBoards] = useState<BoardListItem[]>([])
+    const [boardsLoading, setBoardsLoading] = useState(true)
+    const [selectedBoardId, setSelectedBoardId] = useState('')
+
+    useEffect(() => {
+        let ignore = false
+
+        async function loadBoards() {
+            try {
+                const result = await fetchBoards()
+
+                if (ignore) return
+
+                setBoards(result.items)
+            } catch (err) {
+                if (ignore) return
+
+                setError(err instanceof Error ? err.message :'게시판 목록 조회에 실패했습니다.')
+            } finally {
+                if (!ignore) {
+                    setBoardsLoading(false)
+                }
+            }
+        }
+
+        void loadBoards()
+
+        return () => {
+            ignore = true
+        }
+    }, [])
 
     useEffect(() => {
         let ignore = false
 
         async function loadPosts() {
             try {
-                const result = await fetchPosts(page, 20)
+                const boardId = selectedBoardId ? Number(selectedBoardId) : undefined
+                const result = await fetchPosts(page, 20, boardId)
 
                 if (ignore) return
 
@@ -44,7 +77,7 @@ function PostListPage() {
         return () => {
             ignore = true
         }
-    }, [page])
+    }, [page, selectedBoardId])
 
     const posts = data?.items ?? []
     const totalPages = data?.total_pages ?? 0
@@ -68,7 +101,8 @@ function PostListPage() {
             await deletePost(postId)
 
             setLoading(true)
-            const result = await fetchPosts(page, 20)
+            const boardId = selectedBoardId ? Number(selectedBoardId) : undefined
+            const result = await fetchPosts(page, 20, boardId)
             setData(result)
         } catch (err) {
             setError(err instanceof Error ? err.message : '게시글 삭제에 실패했습니다.')
@@ -76,6 +110,13 @@ function PostListPage() {
             setLoading(false)
             setDeletingId(null)
         }
+    }
+
+    const handleBoardChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        setLoading(true)
+        setError('')
+        setPage(1)
+        setSelectedBoardId(event.target.value)
     }
 
     return (
@@ -108,6 +149,28 @@ function PostListPage() {
                             <AlertDescription>{error}</AlertDescription>
                         </Alert>
                     )}
+
+                    <div className="mb-4 flex items-center gap-2">
+                        <label htmlFor="board-filter" className="text-sm font-medium">
+                            게시판
+                        </label>
+
+                        <select
+                            id="board-filter"
+                            value={selectedBoardId}
+                            onChange={handleBoardChange}
+                            disabled={boardsLoading}
+                            className="border-input bg-background flex h-10 rounded-md border px-3 py-2 text-sm"
+                        >
+                            <option value="">전체</option>
+
+                            {boards.map((board) => (
+                                <option key={board.id} value={String(board.id)}>
+                                    {board.name}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
                     
                     <p>총 {data?.total ?? 0}개</p>
 
