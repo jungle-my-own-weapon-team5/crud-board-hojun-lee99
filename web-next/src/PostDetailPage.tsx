@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import { fetchPost, PostDetail } from "./api/posts"
+import { fetchComments, CommentListItme } from "./api/comments"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card"
 import { Button } from "./components/ui/button"
 import Link from "next/link"
@@ -16,6 +17,9 @@ function PostDetailPage() {
     const [post, setPost] = useState<PostDetail | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
+    const [comments, setComments] = useState<CommentListItme[]>([])
+    const [commentsLoading, setCommentsLoading] = useState(false)
+    const [commentsError, setCommentsError] = useState('')
 
     useEffect(() => {
         async function loadPost() {
@@ -36,6 +40,19 @@ function PostDetailPage() {
                 setError(err instanceof Error ? err.message : '게시글 조회에 실패했습니다.')
             } finally {
                 setLoading(false)
+            }
+            
+            try {
+                setCommentsLoading(true)
+                setCommentsError('')
+
+                const commentsResult = await fetchComments(postId)
+                setComments(commentsResult.items)
+            } catch (err) {
+                setComments([])
+                setCommentsError(err instanceof Error ? err.message : '댓글 조회에 실패했습니다.')
+            } finally {
+                setCommentsLoading(false)
             }
         }
         
@@ -90,6 +107,43 @@ function PostDetailPage() {
                                 {post.content}
                             </p>
                         </article>
+                    )}
+
+                    {post && (
+                        <section className="mt-8 border-t pt-6">
+                            <h2 className="mb-4 text-lg font-semibold">
+                                댓글 {comments.length}
+                            </h2>
+                            
+                            {commentsLoading && <p>댓글을 불러오는 중...</p>}
+
+                            {commentsError && (
+                                <Alert variant="destructive">
+                                    <AlertDescription>{commentsError}</AlertDescription>
+                                </Alert>
+                            )}
+
+                            {!commentsLoading && !commentsError && comments.length == 0 && (
+                                <p className="text-sm text-muted-foreground">아직 댓글이 없습니다.</p>
+                            )}
+                            
+                            <ul className="divide-y">
+                                {comments.map((comment) => (
+                                    <li key={comment.id} className="py-4">
+                                        <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
+                                            <span>작성자 {comment.user_id}</span>
+                                            <time dateTime={comment.created_at}>
+                                                {new Date(comment.created_at).toLocaleString()}
+                                            </time>
+                                        </div>
+
+                                        <p className="whitespace-pre-wrap leading-6">
+                                            {comment.content}
+                                        </p>
+                                    </li>
+                                ))}
+                            </ul>
+                        </section>
                     )}
                 </CardContent>
             </Card>
