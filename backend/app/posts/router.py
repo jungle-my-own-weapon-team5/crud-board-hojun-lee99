@@ -5,7 +5,7 @@ from app.database import get_db
 from app.posts import service as posts_service
 from app.comments import service as comments_service
 from app.posts.schemas import PostListResponse, PostCreateRequest, PostUpdateRequest, PostDetailResponse
-from app.comments.schemas import CommentListResponse
+from app.comments.schemas import CommentListResponse, CommentCreateRequest, CommentCreateResponse
 from app.auth.dependencies import get_current_user_id
 
 
@@ -76,3 +76,17 @@ def list_comments(
     db: Session = Depends(get_db),
 ):
     return comments_service.list_comments(db, post_id=post_id)
+
+@router.post("/{post_id}/comments", response_model=CommentCreateResponse, status_code=status.HTTP_201_CREATED)
+def create_comment(
+    post_id: int,
+    req: CommentCreateRequest,
+    db: Session = Depends(get_db),
+    current_user_id: int = Depends(get_current_user_id),
+):
+    return comments_service.create_comment(
+        db,
+        post_id=post_id,
+        user_id=current_user_id,
+        content=req.content,
+    )
