@@ -7,6 +7,7 @@ import { Input } from "./components/ui/input"
 import { Button } from "./components/ui/button"
 import { toast } from "sonner"
 import { Alert, AlertDescription } from "./components/ui/alert"
+import { useRouter } from "next/navigation"
 
 type FormState = {
     email: string
@@ -22,6 +23,8 @@ function LoginPage() {
     const [form, setForm] = useState<FormState>(initialForm)
     const [error, setError] = useState('')
     const [loading, setLoading] = useState(false)
+
+    const router = useRouter()
 
     const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const {name, value} = event.target
@@ -60,6 +63,7 @@ function LoginPage() {
 
             setForm(initialForm)
             toast.success('로그인되었습니다.')
+            router.replace('/')
         } catch (err) {
             setError(err instanceof Error ? err.message : '로그인에 실패했습니다.')
         } finally {
