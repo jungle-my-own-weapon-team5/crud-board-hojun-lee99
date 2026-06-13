@@ -5,7 +5,7 @@ LoginRequest
 TokenResponse
 """
 
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 class RegisterRequest(BaseModel):
     email: EmailStr
@@ -19,3 +19,10 @@ class LoginRequest(BaseModel):
 class LoginResponse(BaseModel):
     access_token: str
     token_type:str = "bearer"
+
+class MeResponse(BaseModel):
+    id: int
+    email: str
+    nickname: str
+    
+    model_config = ConfigDict(from_attributes=True)
