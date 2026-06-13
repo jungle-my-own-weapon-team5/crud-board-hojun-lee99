@@ -2,8 +2,10 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.posts import service
+from app.posts import service as posts_service
+from app.comments import service as comments_service
 from app.posts.schemas import PostListResponse, PostCreateRequest, PostUpdateRequest, PostDetailResponse
+from app.comments.schemas import CommentListResponse
 from app.auth.dependencies import get_current_user_id
 
 
@@ -16,7 +18,7 @@ def list_posts(
     board_id: int | None = Query(None, ge=1),
     db: Session = Depends(get_db)
 ):
-    return service.list_posts(db, page=page, limit=limit, board_id=board_id)
+    return posts_service.list_posts(db, page=page, limit=limit, board_id=board_id)
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_post(
@@ -24,7 +26,7 @@ def create_post(
     db: Session = Depends(get_db),
     current_user_id: int = Depends(get_current_user_id),
 ):
-    post = service.create_post(
+    post = posts_service.create_post(
         db,
         board_id=req.board_id,
         user_id=current_user_id,
@@ -41,7 +43,7 @@ def update_post(
     db: Session = Depends(get_db),
     current_user_id: int = Depends(get_current_user_id),
 ):
-    service.update_post(
+    posts_service.update_post(
         db,
         post_id=post_id,
         user_id=current_user_id,
@@ -54,7 +56,7 @@ def get_post(
     post_id: int,
     db: Session = Depends(get_db),
 ):
-    return service.get_post(db, post_id=post_id)
+    return posts_service.get_post(db, post_id=post_id)
 
 @router.delete('/{post_id}', status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(
@@ -62,8 +64,15 @@ def delete_post(
     db: Session = Depends(get_db),
     current_user_id: int = Depends(get_current_user_id),
 ):
-    service.delete_post(
+    posts_service.delete_post(
         db,
         post_id=post_id,
         user_id=current_user_id,
     )
+
+@router.get("/{post_id}/comments", response_model=CommentListResponse)
+def list_comments(
+    post_id: int,
+    db: Session = Depends(get_db),
+):
+    return comments_service.list_comments(db, post_id=post_id)
