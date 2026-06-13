@@ -37,3 +37,24 @@ def create_comment(db: Session, *, post_id: int, user_id: int, content: str):
         user_id=user_id,
         content=content,
     )
+
+def delete_comment(db: Session, *, comment_id: int, user_id: int):
+    get_active_user_or_raise(db, user_id=user_id)
+
+    comment = comments_repository.find_comment_by_id(db, comment_id)
+
+    if comment is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Comment not found",
+        )
+    
+    if comment.user_id != user_id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only delete your own comment",
+        )
+    
+    comments_repository.delete_comment(db, comment=comment)
+
+    return

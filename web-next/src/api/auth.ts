@@ -16,6 +16,12 @@ type LoginResponse = {
     token_type: string,
 }
 
+export type CurrentUser = {
+    id: number
+    email: string
+    nickname: string
+}
+
 export async function registerUser(payload: RegisterRequest) {
     const response = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
@@ -62,4 +68,24 @@ export async function loginUser(payload: LoginRequest) {
     localStorage.setItem('accessToken', data.access_token)
 
     return data
+}
+
+export async function fetchCurrentUser(): Promise<CurrentUser> {
+    const accessToken = localStorage.getItem('accessToken')
+
+    if (!accessToken) {
+        throw new Error('로그인이 필요합니다.')
+    }
+
+    const respons = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        }
+    })
+    
+    if (!respons.ok) {
+        throw new Error('로그인이 만료되었습니다. 다시 로그인해주세요.')
+    }
+
+    return respons.json()
 }

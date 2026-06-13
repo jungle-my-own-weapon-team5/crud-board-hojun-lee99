@@ -3,13 +3,14 @@
 import { useParams } from "next/navigation"
 import { SubmitEvent, useEffect, useState } from "react"
 import { fetchPost, PostDetail } from "./api/posts"
-import { fetchComments, CommentListItem, createComment } from "./api/comments"
+import { fetchComments, CommentListItem, createComment, deleteComment } from "./api/comments"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card"
 import { Button } from "./components/ui/button"
 import Link from "next/link"
 import { Alert, AlertDescription } from "./components/ui/alert"
 import { Label } from "./components/ui/label"
 import { Textarea } from "./components/ui/textarea"
+import { fetchCurrentUser } from "./api/auth"
 
 
 function PostDetailPage() {
@@ -25,6 +26,22 @@ function PostDetailPage() {
     const [commentContent, setCommentContent] = useState('')
     const [commentSubmitting, setCommentSubmitting] = useState(false)
     const [commentSubmitError, setCommentSubmitError] = useState('')
+    const [currentUserId, setCurrnetUserId] = useState<number | null>(null)
+    const [commentDeletingId, setCommentDeletingID] = useState<number | null>(null)
+    
+
+    useEffect(() => {
+        async function loadCurrentUser() {
+            try {
+                const user = await fetchCurrentUser()
+                setCurrnetUserId(user.id)
+            } catch {
+                setCurrnetUserId(null)
+            }
+        }
+
+        void loadCurrentUser()
+    }, [])
 
     useEffect(() => {
         async function loadPost() {
@@ -85,6 +102,24 @@ function PostDetailPage() {
             setCommentSubmitError(err instanceof Error ? err.message : '댓글 작성에 실패했습니다.')
         } finally {
             setCommentSubmitting(false)
+        }
+    }
+    
+    const handleCommentDelete = async (commentId: number) => {
+        const confirmed = window.confirm('댓글을 삭제하시겠습니까?')
+        if (!confirmed) return
+
+        try {
+            setCommentDeletingID(commentId)
+            setCommentsError('')
+
+            await deleteComment(commentId)
+
+            setComments((prev) => prev.filter((comment) => comment.id !== commentId))
+        } catch (err) {
+            setCommentsError(err instanceof Error ? err.message : '댓글 삭제에 실패했습니다.')
+        } finally {
+            setCommentDeletingID(null)
         }
     }
     
@@ -187,9 +222,24 @@ function PostDetailPage() {
                                     <li key={comment.id} className="py-4">
                                         <div className="mb-2 flex items-center justify-between text-sm text-muted-foreground">
                                             <span>작성자 {comment.user_id}</span>
-                                            <time dateTime={comment.created_at}>
-                                                {new Date(comment.created_at).toLocaleString()}
-                                            </time>
+                                            
+                                            <div className="flex items-center gap-2">
+                                                <time dateTime={comment.created_at}>
+                                                    {new Date(comment.created_at).toLocaleString()}
+                                                </time>
+
+                                                {currentUserId == comment.user_id && (
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        type="button"
+                                                        disabled={commentDeletingId == comment.id}
+                                                        onClick={() => handleCommentDelete(comment.id)}
+                                                    >
+                                                        {commentDeletingId === comment.id ? '삭제 중...' : '삭제'}
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
 
                                         <p className="whitespace-pre-wrap leading-6">
