@@ -1,13 +1,15 @@
 'use client'
 
 import { useParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { SubmitEvent, useEffect, useState } from "react"
 import { fetchPost, PostDetail } from "./api/posts"
-import { fetchComments, CommentListItme } from "./api/comments"
+import { fetchComments, CommentListItem, createComment } from "./api/comments"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card"
 import { Button } from "./components/ui/button"
 import Link from "next/link"
 import { Alert, AlertDescription } from "./components/ui/alert"
+import { Label } from "./components/ui/label"
+import { Textarea } from "./components/ui/textarea"
 
 
 function PostDetailPage() {
@@ -17,9 +19,12 @@ function PostDetailPage() {
     const [post, setPost] = useState<PostDetail | null>(null)
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState('')
-    const [comments, setComments] = useState<CommentListItme[]>([])
+    const [comments, setComments] = useState<CommentListItem[]>([])
     const [commentsLoading, setCommentsLoading] = useState(false)
     const [commentsError, setCommentsError] = useState('')
+    const [commentContent, setCommentContent] = useState('')
+    const [commentSubmitting, setCommentSubmitting] = useState(false)
+    const [commentSubmitError, setCommentSubmitError] = useState('')
 
     useEffect(() => {
         async function loadPost() {
@@ -58,6 +63,30 @@ function PostDetailPage() {
         
         loadPost()
     }, [postId])
+    
+    const handleCommentSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
+        event.preventDefault()
+        setCommentSubmitError('')
+
+        const content = commentContent.trim()
+        if (!content) {
+            setCommentSubmitError('댓글 내용을 입력해주세요.')
+            return
+        }
+
+        try {
+            setCommentSubmitting(true)
+
+            const createdComment = await createComment(postId, { content })
+            setComments((prev) => [...prev, createdComment])
+            setCommentContent('')
+            setCommentsError('')
+        } catch (err) {
+            setCommentSubmitError(err instanceof Error ? err.message : '댓글 작성에 실패했습니다.')
+        } finally {
+            setCommentSubmitting(false)
+        }
+    }
     
     return (
         <main>
@@ -114,6 +143,32 @@ function PostDetailPage() {
                             <h2 className="mb-4 text-lg font-semibold">
                                 댓글 {comments.length}
                             </h2>
+
+                            <form onSubmit={handleCommentSubmit} className="mb-6 grid gap-3">
+                                <div className="grid gap-2">
+                                    <Label htmlFor="comment-content">댓글 작성</Label>
+                                    <Textarea
+                                        id="comment-content"
+                                        value={commentContent}
+                                        onChange={(event) => setCommentContent(event.target.value)}
+                                        rows={3}
+                                        disabled={commentSubmitting}
+                                        placeholder="댓글을 입력하세요."
+                                    />
+                                </div>
+
+                                {commentSubmitError && (
+                                    <Alert variant="destructive">
+                                        <AlertDescription>{commentSubmitError}</AlertDescription>
+                                    </Alert>
+                                )}
+
+                                <div className="flex justify-end">
+                                    <Button type="submit" disabled={commentSubmitting || !commentContent.trim()}>
+                                        {commentSubmitting ? '등록 중...' : '댓글 등록'}
+                                    </Button>
+                                </div>
+                            </form>
                             
                             {commentsLoading && <p>댓글을 불러오는 중...</p>}
 
