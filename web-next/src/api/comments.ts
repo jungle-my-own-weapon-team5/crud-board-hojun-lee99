@@ -64,3 +64,32 @@ export async function createComment(postId:number, payload: CommentCreateRequest
     
     return response.json()
 }
+
+export async function deleteComment(commentId: number): Promise<void> {
+    const accessToken = localStorage.getItem('accessToken')
+
+    if (!accessToken) {
+        throw new Error('로그인이 필요합니다.')
+    }
+
+    const response = await fetch(`${API_BASE_URL}/comments/${commentId}`, {
+        method: 'DELETE',
+        headers: {
+            Authorization: `Bearer ${accessToken}`,
+        }
+    })
+    
+    if (!response.ok) {
+        const error = await response.json().catch(() => null)
+
+        if (response.status == 401) {
+            throw new Error('로그인이 만료되었습니다. 다시 로그인해주세요.')
+        }
+
+        if (response.status == 403) {
+            throw new Error('자신의 댓글만 삭제할 수 있습니다.')
+        }
+
+        throw new Error(error?.detail ?? '댓글 삭제에 실패했습니다.')
+    }
+}
