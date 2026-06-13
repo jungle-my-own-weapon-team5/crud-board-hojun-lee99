@@ -29,3 +29,6 @@ class CommentCreateRequest(BaseModel):
     
 class CommentCreateResponse(CommentListItem):
     pass
+
+class CommentUpdateRequest(CommentCreateRequest):
+    pass

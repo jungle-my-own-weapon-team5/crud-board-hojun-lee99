@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation"
 import { SubmitEvent, useEffect, useState } from "react"
 import { fetchPost, PostDetail } from "./api/posts"
-import { fetchComments, CommentListItem, createComment, deleteComment } from "./api/comments"
+import { fetchComments, CommentListItem, createComment, deleteComment, updateComment } from "./api/comments"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card"
 import { Button } from "./components/ui/button"
 import Link from "next/link"
@@ -28,6 +28,9 @@ function PostDetailPage() {
     const [commentSubmitError, setCommentSubmitError] = useState('')
     const [currentUserId, setCurrnetUserId] = useState<number | null>(null)
     const [commentDeletingId, setCommentDeletingID] = useState<number | null>(null)
+    const [commentEditingId, setCommentEditingId] = useState<number | null>(null)
+    const [commentEditContent, setCommentEditContent] = useState('')
+    const [commentUpdatingId, setCommentUpdatingId] = useState<number | null>(null)
     
 
     useEffect(() => {
@@ -120,6 +123,48 @@ function PostDetailPage() {
             setCommentsError(err instanceof Error ? err.message : '댓글 삭제에 실패했습니다.')
         } finally {
             setCommentDeletingID(null)
+        }
+    }
+
+    const startCommentEdit = (comment: CommentListItem) => {
+        setCommentEditingId(comment.id)
+        setCommentEditContent(comment.content)
+        setCommentsError('')
+    }
+
+    const cancelCommentEdit = () => {
+        setCommentEditingId(null)
+        setCommentEditContent('')
+    }
+
+    const handleCommentUpdate = async (commentId: number) => {
+        const content = commentEditContent.trim()
+
+        if (!content) {
+            setCommentsError('댓글 내용을 입력해주세요.')
+            return
+        }
+        
+        try {
+            setCommentUpdatingId(commentId)
+            setCommentsError('')
+
+            await updateComment(commentId, { content })
+            
+            setComments((prev) =>
+                prev.map((comment) =>
+                    comment.id === commentId ? 
+                    {...comment, content} 
+                    : comment
+                )
+            )
+            
+            setCommentEditingId(null)
+            setCommentEditContent('')
+        } catch (err) {
+            setCommentsError(err instanceof Error ? err.message : '댓글 수정에 실패했습니다.')
+        } finally {
+            setCommentUpdatingId(null)
         }
     }
     
@@ -229,22 +274,67 @@ function PostDetailPage() {
                                                 </time>
 
                                                 {currentUserId == comment.user_id && (
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        type="button"
-                                                        disabled={commentDeletingId == comment.id}
-                                                        onClick={() => handleCommentDelete(comment.id)}
-                                                    >
-                                                        {commentDeletingId === comment.id ? '삭제 중...' : '삭제'}
-                                                    </Button>
+                                                    <>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            type="button"
+                                                            onClick={() =>startCommentEdit(comment)}
+                                                            disabled={commentDeletingId == comment.id || commentUpdatingId == comment.id}
+                                                        >
+                                                            수정
+                                                        </Button>
+                                                        
+
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            type="button"
+                                                            disabled={commentDeletingId == comment.id}
+                                                            onClick={() => handleCommentDelete(comment.id)}
+                                                            >
+                                                            {commentDeletingId === comment.id ? '삭제 중...' : '삭제'}
+                                                        </Button>
+                                                    </>
                                                 )}
                                             </div>
                                         </div>
+                                        
+                                        {commentEditingId === comment.id ? (
+                                            <div className="grid gap-2">
+                                                <Textarea
+                                                    value={commentEditContent}
+                                                    onChange={(event) => setCommentEditContent(event.target.value)}
+                                                    rows={3}
+                                                    disabled={commentUpdatingId === comment.id}
+                                                />
 
-                                        <p className="whitespace-pre-wrap leading-6">
-                                            {comment.content}
-                                        </p>
+                                                <div className="flex justify-end gap-2">
+                                                    <Button
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="sm"
+                                                        onClick={cancelCommentEdit}
+                                                        disabled={commentUpdatingId === comment.id}
+                                                    >
+                                                        취소
+                                                    </Button>
+
+                                                    <Button
+                                                        type="button"
+                                                        size="sm"
+                                                        onClick={() => handleCommentUpdate(comment.id)}
+                                                        disabled={commentUpdatingId === comment.id || !commentEditContent.trim()}
+                                                    >
+                                                        {commentUpdatingId === comment.id ? '수정 중...' : '저장'}
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p className="whitespace-pre-wrap leading-6">
+                                                {comment.content}
+                                            </p>
+                                        )}
                                     </li>
                                 ))}
                             </ul>

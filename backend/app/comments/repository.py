@@ -27,6 +27,14 @@ def find_comment_by_id(db: Session, comment_id: int) -> Comment | None:
         .first()
     )
 
+def update_comment(db: Session, *, comment: Comment, content:str):
+    comment.content = content
+
+    db.commit()
+    db.refresh(comment)
+
+    return
+
 def delete_comment(db: Session, *, comment: Comment) -> None:
     comment.deleted_at = datetime.now(timezone.utc)
 
